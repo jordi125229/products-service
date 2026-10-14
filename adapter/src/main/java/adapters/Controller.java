@@ -41,16 +41,16 @@ public class Controller {
         return PageMapper.toDto(options, productMapper::toDto);
     }
 
-    @PatchMapping("/option-assign/{productId}/{productQuantity}")
-    public ProductConfigurationDto chooseOption(@PathVariable Long productId, @PathVariable int productQuantity, @RequestParam Set<Long> optionIds) {
-        ProductConfiguration productOption = service.configureProduct(productId, optionIds, productQuantity);
-        return productConfigurationMapper.toDto(productOption);
-    }
-
     @PatchMapping("/update/{productId}")
     public ProductDto updateProduct(@PathVariable Long productId, @RequestBody ActualizeProductCommand command){
         Product product = service.actualizeProduct(productId, command);
         return productMapper.toDto(product);
+    }
+
+    @PostMapping("/option-assign/{productId}/{productQuantity}")
+    public ProductConfigurationDto chooseOption(@PathVariable Long productId, @PathVariable int productQuantity, @RequestParam Set<Long> optionIds) {
+        ProductConfiguration productOption = service.configureProduct(productId, optionIds, productQuantity);
+        return productConfigurationMapper.toDto(productOption);
     }
 
     @PostMapping("/new")
