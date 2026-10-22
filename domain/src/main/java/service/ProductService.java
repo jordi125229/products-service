@@ -10,6 +10,7 @@ import model.ProductOption;
 import ports.ProductOptionsPort;
 import ports.ProductServicePort;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class ProductService {
     }
 
     public Product actualizeProduct(Long productId, ActualizeProductCommand command) {
-        Product product = productServicePort.findById(productId);
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
         if (command.getName() != null) {
             product.setName(command.getName());
         }
@@ -49,7 +50,7 @@ public class ProductService {
     public ProductOption addOption(Long productId, CreateProductOptionCommand command) {
         Price price = new Price(command.getNetPrice(), command.getGrossPrice(), command.getTaxRate());
         ProductOption option = new ProductOption(command.getName(), price, command.getType(), command.getQuantity());
-        Product product = productServicePort.findById(productId);
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
         if (option.getSourcedProductId() != null) {
             productServicePort.save(product);
         } else {
@@ -60,7 +61,7 @@ public class ProductService {
     }
 
     public ProductOption addProductAsConfiguration(Long productId, Long productWhichBeConfigure) {
-        Product product = productServicePort.findById(productId);
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
         if (productOptionsPort.existsByProductIdAndSourcedProductId(productWhichBeConfigure, productId)) {
             throw new IllegalStateException("Ten produkt jest już konfiguracją tego produktu");
         }
@@ -71,6 +72,10 @@ public class ProductService {
 
     public void delete(Long id) {
         productServicePort.delete(id);
+    }
+
+    public void deleteOption(Long optionId){
+        productOptionsPort.deleteById(optionId);
     }
 
     public PagePojo<Product> getProducts(int pageNumber, int pageSize) {
@@ -84,16 +89,31 @@ public class ProductService {
     }
 
     public ProductConfiguration configureProduct(Long productId, Set<Long> optionIds, int quantity) {
-        Product product = productServicePort.findById(productId);
+        if (quantity <= 0) {
+            throw new ProductServiceException("Quantity must be greater than zero");
+        }
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
         if (product.getQuantity() < quantity) {
             throw new ProductServiceException("Insufficient quantity of the product");
         }
-//        product.setQuantity(product.getQuantity() - quantity);
-//        productServicePort.save(product);
         Product productToCart = new Product(product.getName(), product.getPrice(), product.getType(), quantity);
-        Set<ProductOption> options = optionIds.stream()
+        Set<Long> optionIdsNotNull = (optionIds != null) ? optionIds : Collections.emptySet();
+        Set<ProductOption> options = optionIdsNotNull.stream()
                 .map(productOptionsPort::findById)
                 .collect(Collectors.toSet());
         return new ProductConfiguration(productToCart, options);
     }
+
+    public void decreaseStock(Long productId, int quantity) {
+        if (quantity <= 0) {
+            throw new ProductServiceException("Quantity must be greater than zero");
+        }
+        Product productById = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
+        if (productById.getQuantity() < quantity) {
+            throw new ProductServiceException("Insufficient quantity of the product");
+        }
+        productById.setQuantity(productById.getQuantity() - quantity);
+        productServicePort.save(productById);
+    }
 }
+

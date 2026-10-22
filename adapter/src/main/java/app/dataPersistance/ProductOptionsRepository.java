@@ -1,6 +1,5 @@
-package adapters.dataPersistance;
+package app.dataPersistance;
 
-import adapters.dataPersistance.entities.ProductOptionEntity;
 import model.ProductOption;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

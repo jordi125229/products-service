@@ -1,8 +1,8 @@
-package adapters;
+package app;
 
-import adapters.mappers.ProductMapper;
-import adapters.mappers.PageMapper;
-import adapters.mappers.ProductConfigurationMapper;
+import app.mappers.ProductMapper;
+import app.mappers.PageMapper;
+import app.mappers.ProductConfigurationMapper;
 import command.ActualizeProductCommand;
 import command.CreateProductOptionCommand;
 import dto.PageableDto;
@@ -48,7 +48,7 @@ public class Controller {
     }
 
     @PostMapping("/option-assign/{productId}/{productQuantity}")
-    public ProductConfigurationDto chooseOption(@PathVariable Long productId, @PathVariable int productQuantity, @RequestParam Set<Long> optionIds) {
+    public ProductConfigurationDto chooseOption(@PathVariable Long productId, @PathVariable int productQuantity, @RequestParam(required = false) Set<Long> optionIds) {
         ProductConfiguration productOption = service.configureProduct(productId, optionIds, productQuantity);
         return productConfigurationMapper.toDto(productOption);
     }
@@ -57,6 +57,11 @@ public class Controller {
     public ProductDto createProduct(@RequestBody CreateProductCommand command) {
         Product product = service.createProduct(command);
         return productMapper.toDto(product);
+    }
+
+    @PostMapping("/stock/{productId}/{quantity}")
+    public void decreaseStock(@PathVariable Long productId, @PathVariable int quantity) {
+        service.decreaseStock(productId, quantity);  // do wywolania w serwisie order ale dopiero w momencie gdy zamowienie jest oplacone
     }
 
     @PostMapping("/{productId}/options")
@@ -72,7 +77,12 @@ public class Controller {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void deleteProduct(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    @DeleteMapping("/option/{id}")
+    public void deleteProductsOption(@PathVariable Long id){
+        service.delete();
     }
 }

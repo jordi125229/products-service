@@ -1,7 +1,7 @@
-package adapters.mappers;
+package app.mappers;
 
-import adapters.dataPersistance.entities.ProductEntity;
-import adapters.dataPersistance.entities.ProductOptionEntity;
+import app.dataPersistance.ProductEntity;
+import app.dataPersistance.ProductOptionEntity;
 import dto.ProductDto;
 import dto.ProductOptionDto;
 import model.Product;

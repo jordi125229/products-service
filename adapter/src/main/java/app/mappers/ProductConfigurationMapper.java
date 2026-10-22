@@ -1,4 +1,4 @@
-package adapters.mappers;
+package app.mappers;
 
 import dto.ProductConfigurationDto;
 import lombok.RequiredArgsConstructor;

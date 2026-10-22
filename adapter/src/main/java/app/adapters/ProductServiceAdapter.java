@@ -1,9 +1,9 @@
-package adapters;
+package app.adapters;
 
-import adapters.dataPersistance.entities.ProductEntity;
-import adapters.dataPersistance.ProductRepository;
-import adapters.mappers.ProductMapper;
-import adapters.mappers.PageMapper;
+import app.dataPersistance.ProductEntity;
+import app.dataPersistance.ProductRepository;
+import app.mappers.ProductMapper;
+import app.mappers.PageMapper;
 import lombok.RequiredArgsConstructor;
 import model.PagePojo;
 import model.PageablePojo;
@@ -13,6 +13,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import ports.ProductServicePort;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -29,9 +31,9 @@ public class ProductServiceAdapter implements ProductServicePort {
     }
 
     @Override
-    public Product findById(Long id) {
+    public Optional<Product> findById(Long id) {
         ProductEntity productEntity = repository.findById(id).orElseThrow(() -> new NullPointerException());
-        return mapper.toPojo(productEntity);
+        return Optional.of(mapper.toPojo(productEntity));
     }
 
     @Override

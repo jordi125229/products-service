@@ -1,11 +1,11 @@
-package adapters;
+package app.adapters;
 
-import adapters.dataPersistance.entities.ProductEntity;
-import adapters.dataPersistance.entities.ProductOptionEntity;
-import adapters.dataPersistance.ProductOptionsRepository;
-import adapters.dataPersistance.ProductRepository;
-import adapters.mappers.ProductMapper;
-import adapters.mappers.PageMapper;
+import app.dataPersistance.ProductEntity;
+import app.dataPersistance.ProductOptionEntity;
+import app.dataPersistance.ProductOptionsRepository;
+import app.dataPersistance.ProductRepository;
+import app.mappers.ProductMapper;
+import app.mappers.PageMapper;
 import exceptions.ProductServiceException;
 import lombok.RequiredArgsConstructor;
 import model.PagePojo;

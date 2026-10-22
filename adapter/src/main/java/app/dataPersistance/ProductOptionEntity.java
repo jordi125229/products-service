@@ -1,4 +1,4 @@
-package adapters.dataPersistance.entities;
+package app.dataPersistance;
 
 import jakarta.persistence.*;
 import lombok.Getter;
