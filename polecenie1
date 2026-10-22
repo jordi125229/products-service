@@ -1,0 +1,26 @@
+Mikroserwis Produktów
+Task 1: Stworzenie mikroserwisu obsługującego produkty, z endpointami do
+*dodawania,
+*usuwania,
+aktualizacji,
+przegladania produktow oraz pobierania mozliwych konfiguracji produktow
+(Dla typów produktu Smartfon oraz Komputer -> powinno byc mozliwe pobrania mozliwyc konfiguracji dla komputera/laptopa
+np. mozliwe procesory dla tego modelu ilosci ram)
+
+Produkty obsługiwane to:
+
+ Podstawowym produktem jest model.Product z polami takimi jak id, nazwa, cena, typ.
+
+W sklepie internetowym sprzedawane będą produkty będące elektroniką:
+
+**Typ Produktu: Komputer**
+
+**Specyficzna Obsługa**: Implementacja funkcji umożliwiającej konfigurację specyfikacji laptopa/komputera przed dodaniem do koszyka,
+takiej jak wybór procesora, ilości RAM.
+
+**Typ Produktu: Smartfon**
+
+Specyficzna Obsługa: Dodanie funkcji umożliwiającej wybór koloru, pojemności baterii, oraz dodatkowych akcesoriów przy zakupie smartfona.
+
+**Dla pozostałych produktów, które będą sprzedawane w sklepie typem produktu będzie po prostu: model.
+Electronics i dla produktów o tym typie nie ma żadnej dodatkowej obsługi!!!**
