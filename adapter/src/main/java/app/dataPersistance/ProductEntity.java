@@ -23,6 +23,8 @@ public class ProductEntity {
     private Price price;
     private String type;
     private Integer quantity;
+    @Column(name = "owner_id", nullable = false)
+    private String ownerId;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductOptionEntity> options;
 }

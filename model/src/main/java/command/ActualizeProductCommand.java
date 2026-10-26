@@ -12,4 +12,5 @@ public class ActualizeProductCommand {
     private Double taxRate;
     private String type;
     private Integer quantity;
+    private String ownerId;
 }

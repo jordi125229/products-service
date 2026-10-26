@@ -17,12 +17,21 @@ public class Product {
     private String type;
     private Integer quantity;
     private Set<ProductOption> options;
+    private String ownerId;
 
-    public Product(String name, Price price, String type, Integer quantity) {
+    public Product(String name, Price price, String type, Integer quantity, String ownerId) {
         this.name = name;
         this.price = price;
         this.type = type;
         this.quantity = quantity;
         this.options = new HashSet<>();
+        this.ownerId = ownerId;
+    }
+
+    public Product(String name, Price price, String type, int quantity) {
+        this.name = name;
+        this.price = price;
+        this.type = type;
+        this.quantity = quantity;
     }
 }

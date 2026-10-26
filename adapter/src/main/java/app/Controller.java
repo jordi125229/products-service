@@ -15,6 +15,8 @@ import model.PagePojo;
 import model.Product;
 import model.ProductConfiguration;
 import model.ProductOption;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import service.ProductService;
 
@@ -42,8 +44,8 @@ public class Controller {
     }
 
     @PatchMapping("/update/{productId}")
-    public ProductDto updateProduct(@PathVariable Long productId, @RequestBody ActualizeProductCommand command){
-        Product product = service.actualizeProduct(productId, command);
+    public ProductDto updateProduct(@PathVariable Long productId, @RequestBody ActualizeProductCommand command, @AuthenticationPrincipal Jwt jwt){
+        Product product = service.actualizeProduct(productId, command, jwt.getSubject());
         return productMapper.toDto(product);
     }
 
@@ -54,15 +56,16 @@ public class Controller {
     }
 
     @PostMapping("/new")
-    public ProductDto createProduct(@RequestBody CreateProductCommand command) {
+    public ProductDto createProduct(@RequestBody CreateProductCommand command, @AuthenticationPrincipal Jwt jwt) {
+        command.setOwnerId(jwt.getSubject());
         Product product = service.createProduct(command);
         return productMapper.toDto(product);
     }
 
-    @PostMapping("/stock/{productId}/{quantity}")
-    public void decreaseStock(@PathVariable Long productId, @PathVariable int quantity) {
-        service.decreaseStock(productId, quantity);  // do wywolania w serwisie order ale dopiero w momencie gdy zamowienie jest oplacone
-    }
+//    @PostMapping("/stock/{productId}/{quantity}")
+//    public void decreaseStock(@PathVariable Long productId, @PathVariable int quantity) {
+//        service.decreaseStock(productId, quantity);  // do wywolania w serwisie order ale dopiero w momencie gdy zamowienie jest oplacone
+//    }
 
     @PostMapping("/{productId}/options")
     public ProductOptionDto addOption(@PathVariable Long productId, @RequestBody CreateProductOptionCommand command) {
@@ -77,12 +80,12 @@ public class Controller {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteProduct(@PathVariable Long id) {
-        service.delete(id);
+    public void deleteProduct(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        service.delete(id, jwt.getSubject());
     }
 
     @DeleteMapping("/option/{id}")
-    public void deleteProductsOption(@PathVariable Long id){
-        service.delete();
+    public void deleteProductsOption(@PathVariable Long optionId, @AuthenticationPrincipal Jwt jwt){
+        service.deleteOption(optionId, jwt.getSubject());
     }
 }

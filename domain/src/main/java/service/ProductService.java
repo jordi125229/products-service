@@ -11,6 +11,8 @@ import ports.ProductOptionsPort;
 import ports.ProductServicePort;
 
 import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,12 +27,15 @@ public class ProductService {
         if (createProductCommand.getQuantity() == null) {
             createProductCommand.setQuantity(0);
         }
-        Product product = new Product(createProductCommand.getName(), price, createProductCommand.getType(), createProductCommand.getQuantity());
+        Product product = new Product(createProductCommand.getName(), price, createProductCommand.getType(), createProductCommand.getQuantity(), createProductCommand.getOwnerId());
         return productServicePort.save(product);
     }
 
-    public Product actualizeProduct(Long productId, ActualizeProductCommand command) {
+    public Product actualizeProduct(Long productId, ActualizeProductCommand command, String userId) {
         Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
+        if (!product.getOwnerId().equals(userId)) {
+            throw new NullPointerException("User is not the owner of this product");
+        }
         if (command.getName() != null) {
             product.setName(command.getName());
         }
@@ -46,6 +51,7 @@ public class ProductService {
         }
         return productServicePort.save(product);
     }
+
 
     public ProductOption addOption(Long productId, CreateProductOptionCommand command) {
         Price price = new Price(command.getNetPrice(), command.getGrossPrice(), command.getTaxRate());
@@ -70,11 +76,20 @@ public class ProductService {
         return productOptionsPort.save(productWhichBeConfigure, option);
     }
 
-    public void delete(Long id) {
+    public void delete(Long id, String userId) {
+        Product product = productServicePort.findById(id).orElseThrow(() -> new NullPointerException("Can't find product"));
+        if (!product.getOwnerId().equals(userId)) {
+            throw new NullPointerException("User is not the owner of this product");
+        }
         productServicePort.delete(id);
     }
 
-    public void deleteOption(Long optionId){
+    public void deleteOption(Long optionId, String userId) {
+        ProductOption byId = productOptionsPort.findById(optionId);
+        Product product = productServicePort.findById(byId.getSourcedProductId()).orElseThrow(() -> new NullPointerException("Can't find product"));
+        if (!product.getOwnerId().equals(userId)) {
+            throw new NullPointerException("User is not the owner of this product");
+        }
         productOptionsPort.deleteById(optionId);
     }
 
@@ -104,16 +119,16 @@ public class ProductService {
         return new ProductConfiguration(productToCart, options);
     }
 
-    public void decreaseStock(Long productId, int quantity) {
-        if (quantity <= 0) {
-            throw new ProductServiceException("Quantity must be greater than zero");
-        }
-        Product productById = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
-        if (productById.getQuantity() < quantity) {
-            throw new ProductServiceException("Insufficient quantity of the product");
-        }
-        productById.setQuantity(productById.getQuantity() - quantity);
-        productServicePort.save(productById);
-    }
+//    public void decreaseStock(Long productId, int quantity) {
+//        if (quantity <= 0) {
+//            throw new ProductServiceException("Quantity must be greater than zero");
+//        }
+//        Product productById = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
+//        if (productById.getQuantity() < quantity) {
+//            throw new ProductServiceException("Insufficient quantity of the product");
+//        }
+//        productById.setQuantity(productById.getQuantity() - quantity);
+//        productServicePort.save(productById);
+//    } to jest metoda potrzebna do zmniajszania stanu magazynowego w momencie w ktorym zakup jest potwierdzony
 }
 
