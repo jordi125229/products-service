@@ -3,7 +3,10 @@ package service;
 import command.ActualizeProductCommand;
 import command.CreateProductCommand;
 import command.CreateProductOptionCommand;
-import exceptions.ProductServiceException;
+import exceptions.ProductNotFoundException;
+import exceptions.ProductQuantityException;
+import exceptions.ProductsOptionQuantity;
+import exceptions.UserIsNotTheOwnerException;
 import lombok.RequiredArgsConstructor;
 import model.*;
 import model.ProductOption;
@@ -11,8 +14,6 @@ import ports.ProductOptionsPort;
 import ports.ProductServicePort;
 
 import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,9 +33,9 @@ public class ProductService {
     }
 
     public Product actualizeProduct(Long productId, ActualizeProductCommand command, String userId) {
-        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
         if (!product.getOwnerId().equals(userId)) {
-            throw new NullPointerException("User is not the owner of this product");
+            throw new UserIsNotTheOwnerException("User is not the owner of this product");
         }
         if (command.getName() != null) {
             product.setName(command.getName());
@@ -67,9 +68,9 @@ public class ProductService {
     }
 
     public ProductOption addProductAsConfiguration(Long productId, Long productWhichBeConfigure) {
-        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
         if (productOptionsPort.existsByProductIdAndSourcedProductId(productWhichBeConfigure, productId)) {
-            throw new IllegalStateException("Ten produkt jest już konfiguracją tego produktu");
+            throw new ProductsOptionQuantity("This product is already configuration of the product.");
         }
         ProductOption option = new ProductOption(product.getName(), product.getPrice(), product.getType(), product.getQuantity());
         option.setSourcedProductId(productId);
@@ -77,25 +78,28 @@ public class ProductService {
     }
 
     public void delete(Long id, String userId) {
-        Product product = productServicePort.findById(id).orElseThrow(() -> new NullPointerException("Can't find product"));
+        Product product = productServicePort.findById(id).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
         if (!product.getOwnerId().equals(userId)) {
-            throw new NullPointerException("User is not the owner of this product");
+            throw new UserIsNotTheOwnerException("User is not the owner of this product");
         }
         productServicePort.delete(id);
     }
 
     public void deleteOption(Long optionId, String userId) {
         ProductOption byId = productOptionsPort.findById(optionId);
-        Product product = productServicePort.findById(byId.getSourcedProductId()).orElseThrow(() -> new NullPointerException("Can't find product"));
+        Product product = productServicePort.findById(byId.getSourcedProductId()).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
         if (!product.getOwnerId().equals(userId)) {
-            throw new NullPointerException("User is not the owner of this product");
+            throw new UserIsNotTheOwnerException("User is not the owner of this product");
         }
         productOptionsPort.deleteById(optionId);
     }
 
-    public PagePojo<Product> getProducts(int pageNumber, int pageSize) {
+    public PagePojo<Product> getProducts(String productType, int pageNumber, int pageSize) {
         PageablePojo pageable = new PageablePojo(pageSize, pageNumber);
-        return productServicePort.findAll(pageable);
+        if (productType == null || productType.isBlank()) {
+            return productServicePort.findAll(pageable);
+        }
+        return productServicePort.findByProductsType(pageable, productType);
     }
 
     public PagePojo<ProductOption> getOptions(int pageNumber, int pageSize, Long id) {
@@ -105,11 +109,11 @@ public class ProductService {
 
     public ProductConfiguration configureProduct(Long productId, Set<Long> optionIds, int quantity) {
         if (quantity <= 0) {
-            throw new ProductServiceException("Quantity must be greater than zero");
+            throw new ProductQuantityException("Quantity must be greater than zero");
         }
-        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
         if (product.getQuantity() < quantity) {
-            throw new ProductServiceException("Insufficient quantity of the product");
+            throw new ProductQuantityException("Insufficient quantity of the product");
         }
         Product productToCart = new Product(product.getName(), product.getPrice(), product.getType(), quantity);
         Set<Long> optionIdsNotNull = (optionIds != null) ? optionIds : Collections.emptySet();

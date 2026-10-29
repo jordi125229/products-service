@@ -15,4 +15,6 @@ public interface ProductServicePort {
     void delete(Long id);
 
     PagePojo<Product> findAll(PageablePojo pageable);
+
+    PagePojo<Product> findByProductsType(PageablePojo pageable, String productType);
 }

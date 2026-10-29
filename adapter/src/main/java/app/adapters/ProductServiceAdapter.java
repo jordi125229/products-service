@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import ports.ProductServicePort;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -46,5 +47,17 @@ public class ProductServiceAdapter implements ProductServicePort {
         Pageable springPageable = PageRequest.of(pageable.getPage(), pageable.getSize());
         Page<ProductEntity> productPage = repository.findAll(springPageable);
         return PageMapper.toPojo(productPage, mapper::toPojo);
+    }
+
+    @Override
+    public PagePojo<Product> findByProductsType(PageablePojo pageable, String productType) {
+        Pageable springPageable = PageRequest.of(pageable.getPage(), pageable.getSize());
+        List<Product> byProductType = repository.findByType(productType).stream()
+                .map(mapper::toPojo)
+                .toList();
+        Page<ProductEntity> productPage = repository.findAll(springPageable);
+        PagePojo<Product> pojoProductPage = PageMapper.toPojo(productPage, mapper::toPojo);
+        pojoProductPage.setContent(byProductType);
+        return pojoProductPage;
     }
 }

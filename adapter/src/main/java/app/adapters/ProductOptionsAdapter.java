@@ -6,7 +6,9 @@ import app.dataPersistance.ProductOptionsRepository;
 import app.dataPersistance.ProductRepository;
 import app.mappers.ProductMapper;
 import app.mappers.PageMapper;
-import exceptions.ProductServiceException;
+import exceptions.ProductNotFoundException;
+import exceptions.ProductQuantityException;
+import exceptions.ProductsOptionQuantity;
 import lombok.RequiredArgsConstructor;
 import model.PagePojo;
 import model.PageablePojo;
@@ -34,7 +36,7 @@ public class ProductOptionsAdapter implements ProductOptionsPort {
 
     @Override
     public ProductOption findById(Long id) {
-        ProductOptionEntity productOptionEntity = repository.findById(id).orElseThrow(() -> new ProductServiceException("Product option wasn't found!"));
+        ProductOptionEntity productOptionEntity = repository.findById(id).orElseThrow(() -> new ProductsOptionQuantity("Product option wasn't found!"));
         return mapper.toPojo(productOptionEntity);
     }
 
@@ -45,11 +47,11 @@ public class ProductOptionsAdapter implements ProductOptionsPort {
 
     @Override
     public ProductOption save(Long productId, ProductOption option) {
-        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ProductServiceException("Product wasn't found!"));
+        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product wasn't found!"));
         ProductOptionEntity productOptionEntity = mapper.toEntity(option);
         productOptionEntity.setProduct(product);
         if (productOptionEntity.getQuantity() > product.getQuantity()){
-            throw new ProductServiceException("Product's quantity can't be less than product's option quantity");
+            throw new ProductQuantityException("Product's quantity can't be less than product's option quantity");
         }
         ProductOptionEntity saved = repository.save(productOptionEntity);
         return mapper.toPojo(saved);

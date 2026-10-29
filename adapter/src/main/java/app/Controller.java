@@ -32,8 +32,8 @@ public class Controller {
     private final ProductConfigurationMapper productConfigurationMapper;
 
     @GetMapping
-    public PageableDto<ProductDto> getProducts(@RequestParam int page, @RequestParam int size) {
-        PagePojo<Product> products = service.getProducts(page, size);
+    public PageableDto<ProductDto> getProducts(@RequestParam(required = false) String productsType, @RequestParam int page, @RequestParam int size) {
+        PagePojo<Product> products = service.getProducts(productsType, page, size);
         return PageMapper.toDto(products, productMapper::toDto);
     }
 
