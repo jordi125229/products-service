@@ -10,7 +10,7 @@ public interface ProductOptionsPort {
 
     PagePojo<ProductOption> findAllByProductId(Long productId, PageablePojo pageable);
 
-    ProductOption findById(Long id);
+    Optional<ProductOption> findById(Long id);
 
     void deleteById(Long id);
 

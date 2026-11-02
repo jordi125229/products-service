@@ -19,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import ports.ProductOptionsPort;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class ProductOptionsAdapter implements ProductOptionsPort {
@@ -35,9 +37,9 @@ public class ProductOptionsAdapter implements ProductOptionsPort {
     }
 
     @Override
-    public ProductOption findById(Long id) {
-        ProductOptionEntity productOptionEntity = repository.findById(id).orElseThrow(() -> new ProductsOptionQuantity("Product option wasn't found!"));
-        return mapper.toPojo(productOptionEntity);
+    public Optional<ProductOption> findById(Long id) {
+        return repository.findById(id)
+                .map(mapper::toPojo);
     }
 
     @Override
@@ -47,12 +49,9 @@ public class ProductOptionsAdapter implements ProductOptionsPort {
 
     @Override
     public ProductOption save(Long productId, ProductOption option) {
-        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product wasn't found!"));
         ProductOptionEntity productOptionEntity = mapper.toEntity(option);
-        productOptionEntity.setProduct(product);
-        if (productOptionEntity.getQuantity() > product.getQuantity()){
-            throw new ProductQuantityException("Product's quantity can't be less than product's option quantity");
-        }
+        ProductEntity productProxy = productRepository.getReferenceById(productId);
+        productOptionEntity.setProduct(productProxy);
         ProductOptionEntity saved = repository.save(productOptionEntity);
         return mapper.toPojo(saved);
     }

@@ -13,5 +13,5 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long>, J
 
     Page<ProductEntity> findAll(Pageable pageable);
 
-    List<ProductEntity> findByType(String type);
+    Page<ProductEntity> findByType(String type, Pageable pageable);
 }

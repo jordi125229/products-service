@@ -1,9 +1,7 @@
 package app.dataPersistance;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import model.Price;
 
 import java.util.Set;
@@ -13,6 +11,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductEntity {
 
     @Id

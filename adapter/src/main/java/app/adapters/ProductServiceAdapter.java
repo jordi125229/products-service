@@ -4,6 +4,7 @@ import app.dataPersistance.ProductEntity;
 import app.dataPersistance.ProductRepository;
 import app.mappers.ProductMapper;
 import app.mappers.PageMapper;
+import exceptions.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.PagePojo;
 import model.PageablePojo;
@@ -33,7 +34,7 @@ public class ProductServiceAdapter implements ProductServicePort {
 
     @Override
     public Optional<Product> findById(Long id) {
-        ProductEntity productEntity = repository.findById(id).orElseThrow(() -> new NullPointerException());
+        ProductEntity productEntity = repository.findById(id).orElseThrow(() -> new ProductNotFoundException("Can't find this product"));
         return Optional.of(mapper.toPojo(productEntity));
     }
 
@@ -52,12 +53,7 @@ public class ProductServiceAdapter implements ProductServicePort {
     @Override
     public PagePojo<Product> findByProductsType(PageablePojo pageable, String productType) {
         Pageable springPageable = PageRequest.of(pageable.getPage(), pageable.getSize());
-        List<Product> byProductType = repository.findByType(productType).stream()
-                .map(mapper::toPojo)
-                .toList();
-        Page<ProductEntity> productPage = repository.findAll(springPageable);
-        PagePojo<Product> pojoProductPage = PageMapper.toPojo(productPage, mapper::toPojo);
-        pojoProductPage.setContent(byProductType);
-        return pojoProductPage;
+        Page<ProductEntity> productPage = repository.findByType(productType, springPageable);
+        return PageMapper.toPojo(productPage, mapper::toPojo);
     }
 }

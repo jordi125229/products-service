@@ -12,7 +12,6 @@ import model.*;
 import model.ProductOption;
 import ports.ProductOptionsPort;
 import ports.ProductServicePort;
-
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,28 +52,28 @@ public class ProductService {
         return productServicePort.save(product);
     }
 
-
     public ProductOption addOption(Long productId, CreateProductOptionCommand command) {
         Price price = new Price(command.getNetPrice(), command.getGrossPrice(), command.getTaxRate());
         ProductOption option = new ProductOption(command.getName(), price, command.getType(), command.getQuantity());
-        Product product = productServicePort.findById(productId).orElseThrow(() -> new NullPointerException("Can't find product"));
-        if (option.getSourcedProductId() != null) {
-            productServicePort.save(product);
-        } else {
-            product.setQuantity(product.getQuantity() + command.getQuantity());
-            productServicePort.save(product);
+        Product product = productServicePort.findById(productId).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
+        if (option.getQuantity() > product.getQuantity()){
+            throw new ProductQuantityException("Product's quantity can't be less than product's option quantity");
         }
+        if (option.getSourcedProductId() == null) {
+            product.setQuantity(product.getQuantity() + command.getQuantity());
+        }
+        productServicePort.save(product);
         return productOptionsPort.save(productId, option);
     }
 
-    public ProductOption addProductAsConfiguration(Long productId, Long productWhichBeConfigure) {
+    public ProductOption addProductAsConfiguration(Long productId, Long productWhichBeConfigured) {
         Product product = productServicePort.findById(productId).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
-        if (productOptionsPort.existsByProductIdAndSourcedProductId(productWhichBeConfigure, productId)) {
+        if (productOptionsPort.existsByProductIdAndSourcedProductId(productWhichBeConfigured, productId)) {
             throw new ProductsOptionQuantity("This product is already configuration of the product.");
         }
         ProductOption option = new ProductOption(product.getName(), product.getPrice(), product.getType(), product.getQuantity());
         option.setSourcedProductId(productId);
-        return productOptionsPort.save(productWhichBeConfigure, option);
+        return productOptionsPort.save(productWhichBeConfigured, option);
     }
 
     public void delete(Long id, String userId) {
@@ -86,7 +85,7 @@ public class ProductService {
     }
 
     public void deleteOption(Long optionId, String userId) {
-        ProductOption byId = productOptionsPort.findById(optionId);
+        ProductOption byId = productOptionsPort.findById(optionId).orElseThrow(() -> new ProductNotFoundException("Product option not found"));
         Product product = productServicePort.findById(byId.getSourcedProductId()).orElseThrow(() -> new ProductNotFoundException("Can't find product"));
         if (!product.getOwnerId().equals(userId)) {
             throw new UserIsNotTheOwnerException("User is not the owner of this product");
@@ -118,7 +117,7 @@ public class ProductService {
         Product productToCart = new Product(product.getName(), product.getPrice(), product.getType(), quantity);
         Set<Long> optionIdsNotNull = (optionIds != null) ? optionIds : Collections.emptySet();
         Set<ProductOption> options = optionIdsNotNull.stream()
-                .map(productOptionsPort::findById)
+                .map(productOptionId -> getProductOption(productOptionId))
                 .collect(Collectors.toSet());
         return new ProductConfiguration(productToCart, options);
     }
@@ -134,5 +133,10 @@ public class ProductService {
 //        productById.setQuantity(productById.getQuantity() - quantity);
 //        productServicePort.save(productById);
 //    } to jest metoda potrzebna do zmniajszania stanu magazynowego w momencie w ktorym zakup jest potwierdzony
+
+    private ProductOption getProductOption(Long productOptionId) {
+        return productOptionsPort.findById(productOptionId)
+                .orElseThrow(() -> new ProductNotFoundException("Product option not found"));
+    }
 }
 

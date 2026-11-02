@@ -1,10 +1,14 @@
 package command;
 
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ActualizeProductCommand {
     private String name;
     private BigDecimal netPrice;
